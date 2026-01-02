@@ -3,32 +3,37 @@ services:
   nginx:
     build:
       context: ./requirements/nginx
+    image: nginx
     ports:
       - "443:443"
     volumes:
-      - nginx_conf:/etc/nginx/conf.d
+      - ${HOST_WP_VOLUME_PATH}:${WP_VOLUME_PATH}
     depends_on:
       - wordpress
     networks:
       - inception
   wordpress:
+    build:
+      context: ./requirements/wordpress
     image: wordpress
     env_file:
-      - ./secrets/credentials.env
+      - ../secrets/secrets.env
       - ./.env
     volumes:
-      - wordpress_data:${WP_VOLUME_PATH}
+      - ${HOST_WP_VOLUME_PATH}:${WP_VOLUME_PATH}
     depends_on:
       - mariadb
     networks:
       - inception
   mariadb:
     image: mariadb
+    build:
+      context: ./requirements/mariadb
     env_file:
-      - ./secrets/credentials.env
+      - ../secrets/secrets.env
       - ./.env
     volumes:
-      - mariadb_data:${MARIADB_VOLUME_PATH}
+      - ${HOST_MARIADB_VOLUME_PATH}:${MARIADB_VOLUME_PATH}
     networks:
       - inception
 volumes:
