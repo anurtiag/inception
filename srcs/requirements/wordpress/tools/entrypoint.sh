@@ -8,15 +8,13 @@ NC='\033[0m'
 
 echo -e "${BLUE}[WordPress] Iniciando configuración...${NC}"
 
-# Comprobar variables de entorno necesarias
-if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USER" ] || [ -z "$MYSQL_PASSWORD" ] || [ -z "$WP_ADMIN_USER" ] || [ -z "$WP_ADMIN_PASSWORD" ] || [ -z "$WP_ADMIN_EMAIL" ] || [ -z "$WP_URL" ] || [ -z "$WP_TITLE" ] || [ -z "$WP_USER" ] || [ -z "$WP_USER_EMAIL" ] || [ -z "$WP_USER_PASSWORD" ]; then
+if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USER" ] || [ -z "$MYSQL_PASSWORD" ] || [ -z "$WP_ADMIN_USER" ] || [ -z "$WP_ADMIN_PASSWORD" ] || [ -z "$WP_ADMIN_EMAIL" ] || [ -z "$DOMAIN" ] || [ -z "$WP_TITLE" ] || [ -z "$WP_USER" ] || [ -z "$WP_USER_EMAIL" ] || [ -z "$WP_USER_PASSWORD" ]; then
     echo "Error: Faltan variables de entorno necesarias."
     exit 1
 fi
 
-# Esperar a que MariaDB esté listo
 echo -e "${BLUE}[WordPress] Esperando a que MariaDB esté disponible...${NC}"
-until mysql -h mariadb -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e "SELECT 1" &>/dev/null; do
+until mysql -h mariadb -P "${MARIADB_PORT:-3306}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e "SELECT 1" &>/dev/null; do
     echo -e "${YELLOW}[WordPress] MariaDB no está listo aún... esperando${NC}"
     sleep 3
 done
@@ -24,7 +22,6 @@ echo -e "${GREEN}[WordPress] MariaDB está listo${NC}"
 
 cd /var/www/html
 
-# Instalar WordPress si no está instalado
 if [ ! -f wp-config.php ]; then
     echo -e "${BLUE}[WordPress] Descargando WordPress...${NC}"
     wp core download --allow-root
@@ -33,11 +30,11 @@ if [ ! -f wp-config.php ]; then
         --dbname="${MYSQL_DATABASE}" \
         --dbuser="${MYSQL_USER}" \
         --dbpass="${MYSQL_PASSWORD}" \
-        --dbhost=mariadb \
+        --dbhost="mariadb:${MARIADB_PORT:-3306}" \
         --allow-root
     echo -e "${BLUE}[WordPress] Instalando WordPress...${NC}"
     wp core install \
-        --url="${WP_URL}" \
+        --url="${DOMAIN}" \
         --title="${WP_TITLE}" \
         --admin_user="${WP_ADMIN_USER}" \
         --admin_password="${WP_ADMIN_PASSWORD}" \

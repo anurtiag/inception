@@ -1,17 +1,18 @@
 # Variables
 COMPOSE=docker-compose -f srcs/docker-compose.yml
+DOMAIN=anurtiag.42.fr
 
 
 all: up
 
-build:
+build: hosts
 	$(COMPOSE) build
 
-up:
+up: hosts
 	$(COMPOSE) up -d --build
 
 down:
-	$(COMPOSE) down -v
+	$(COMPOSE) down
 
 clean:
 	$(COMPOSE) down -v --remove-orphans
@@ -23,6 +24,10 @@ fclean: clean
 restart:
 	$(COMPOSE) down
 	$(COMPOSE) up -d --build
+
+hosts:
+	grep -q "$(DOMAIN)" /etc/hosts || \
+		sudo sh -c 'echo "127.0.0.1 $(DOMAIN)" >> /etc/hosts'
 
 
 .PHONY: all build up down clean restart hosts

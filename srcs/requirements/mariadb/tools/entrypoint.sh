@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-
+# Actualiza el puerto en my.cnf si se proporciona
+if [ ! -z "$MARIADB_PORT" ]; then
+	sed -i "s/^port = .*/port = ${MARIADB_PORT}/" /etc/mysql/my.cnf
+fi
 
 # Cambia bind-address a 0.0.0.0 para permitir conexiones externas
 sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf
